@@ -1,0 +1,69 @@
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool.poetry]
+authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
+classifiers = []
+description = ""
+keywords = []
+license = "MIT"
+name = "kraken-rule-engine"
+packages = [
+    {include = "kraken/re", from = "src"},
+]
+readme = "readme.md"
+version = "0.1.0"
+
+[tool.poetry.urls]
+# "Bug Tracker" = ""
+# Documentation = ""
+# Homepage = ""
+# Repository = ""
+
+[tool.poetry.dependencies]
+python = "^3.7"
+typeapi = "^0.2.1"
+
+[tool.poetry.dev-dependencies]
+black = "*"
+flake8 = "*"
+isort = "*"
+mypy = "*"
+pytest = "*"
+
+[tool.slap]
+typed = true
+
+[tool.slap.test]
+black = "black --check src/ tests/"
+check = "slap check"
+flake8 = "flake8 src/ tests/"
+isort = "isort --check-only src/ tests/"
+mypy = "dmypy run src/"
+pytest = "pytest tests/ -vv --log-cli-level WARN"
+
+[tool.slap.run]
+fmt = "black src/ tests/ && isort src/ tests/"
+
+[tool.mypy]
+explicit_package_bases = true
+mypy_path = ["src"]
+namespace_packages = true
+pretty = true
+python_version = "3.7"
+show_error_codes = true
+show_error_context = true
+strict = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[tool.isort]
+combine_as_imports = true
+line_length = 120
+profile = "black"
+
+[tool.black]
+line-length = 120
