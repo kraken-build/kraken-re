@@ -15,6 +15,9 @@ class FrozenDict(Mapping[K, V]):
         self._data.update(cast(Dict[K, V], kwargs))
         self._hash = hash(tuple(self._data.items()))
 
+    def __repr__(self) -> str:
+        return f"FrozenDict({self._data})"
+
     def __getitem__(self, __k: K) -> V:
         return self._data[__k]
 

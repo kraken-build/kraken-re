@@ -8,10 +8,8 @@ classifiers = []
 description = ""
 keywords = []
 license = "MIT"
-name = "kraken-rule-engine"
-packages = [
-    {include = "kraken/re", from = "src"},
-]
+name = "kraken-re"
+packages = [{include = "kraken/re", from = "src"}]
 readme = "readme.md"
 version = "0.1.0"
 

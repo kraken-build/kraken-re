@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import dataclasses
 import inspect
-from typing import Any, Callable, Collection, Iterator
+import operator
+from typing import Any, Callable, Collection, Iterator, Tuple
 
 from kraken.re.util.frozendict import FrozenDict
+
+TypeMatcherFunc = Callable[[type, type], bool]
+RulePath = Tuple["Rule", ...]
 
 
 @dataclasses.dataclass
@@ -13,7 +17,7 @@ class Rule:
 
     name: str
     input_types: FrozenDict[str, type]
-    output_type: type[type]
+    output_type: type
     function: Callable[..., Any]
 
     def __post_init__(self) -> None:
@@ -30,8 +34,11 @@ class Rule:
     def __repr__(self) -> str:
         return f"Rule<{self}>"
 
-    def matches_inputs(self, input_types: Collection[type]) -> bool:
-        return all(t in input_types for t in self.input_types.values())
+    def matches_inputs(self, input_types: Collection[type], type_matcher: TypeMatcherFunc | None = None) -> bool:
+        if type_matcher is None:
+            return all(t in input_types for t in self.input_types.values())
+        else:
+            return all(any(type_matcher(x, y) for y in input_types) for x in self.input_types.values())
 
     def apply_to_inputs(self, inputs: dict[type, str]) -> Any:
         kwargs = {k: inputs[v] for k, v in self.input_types.items()}
@@ -103,18 +110,57 @@ class RuleSet:
         assert isinstance(rule, Rule), type(rule).__qualname__
         self._rules.append(rule)
 
-    def get_rules_for_output_type(self, output_type: type, respect_inheritance: bool = True) -> Iterator[Rule]:
-        """Return the rules that produce the given output type.
+    def get_rules_for_input_types(
+        self,
+        input_types: Collection[type],
+        type_matcher: TypeMatcherFunc | None = None,
+    ) -> Iterator[Rule]:
+        """Return all rules that accept any subset of the given *input_types*.
 
-        :param output_type:
-        :param respect_inheritance: If enabled, take inheritance into account and also return rules that produce
-            a subclass of the given *output_type*.
+        :param input_types: A collection of input types that are available.
+        :param type_matcher: If specified, the function is used to check if the type passed as positional argument 1
+            is to be considered a subtype of the type at positional argument 2. If not specified, only exact type
+            is matched.
         """
 
-        if not respect_inheritance:
-            yield from self._rules_by_output_type.get(output_type, [])
-            return
+        type_matcher = type_matcher
+        for rule in self._rules:
+            if rule.matches_inputs(input_types, type_matcher):
+                yield rule
 
+    def get_rules_for_output_type(
+        self,
+        output_type: type,
+        type_matcher: TypeMatcherFunc | None = None,
+    ) -> Iterator[Rule]:
+        """Return the rules that produce the given output type.
+
+        :param output_type: The output type that must be produced by the rules.
+        :param type_matcher: If specified, the function is used to check if the type passed as positional argument 1
+            is to be considered a subtype of the type at positional argument 2. If not specified, only exact type
+            is matched.
+        """
+
+        type_matcher = type_matcher or operator.eq
         for type_ in self._rules_by_output_type:
-            if issubclass(type_, output_type):
+            if type_matcher(type_, output_type):
                 yield from self._rules_by_output_type[type_]
+
+    def resolve_paths(
+        self,
+        target_type: type,
+        root_types: Collection[type],
+        type_matcher: TypeMatcherFunc | None = None,
+    ) -> Iterator[RulePath]:
+        """Return all possible rule paths to reach the *target_type* from the given *root_types*.
+
+        The evaluation assumes that any type evaluated by a rule results is added to the *root_types*."""
+
+        def _find_paths(target_type: type, input_types: set[type], path: RulePath) -> Iterator[RulePath]:
+            if target_type in input_types:
+                yield path
+            else:
+                for rule in self.get_rules_for_input_types(input_types, type_matcher):
+                    yield from _find_paths(rule.output_type, input_types | {rule.output_type}, path + (rule,))
+
+        yield from _find_paths(target_type, set(root_types), ())
