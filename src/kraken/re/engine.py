@@ -1,4 +1,5 @@
-from logging import root
+from __future__ import annotations
+
 from typing import Any, Collection, TypeVar, cast
 
 from kraken.re.exceptions import MultiplePathsToReachTargetTypeError, NoPathsToReachTargetTypeError

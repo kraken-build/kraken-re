@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from email import message
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any, Collection, Sequence
 
-from kraken.re.address import Address
 from kraken.re.util.repr import SafeStr
 
 if TYPE_CHECKING:
+    from kraken.re.address import Address
     from kraken.re.fields import Field
+    from kraken.re.rules import RulePath
     from kraken.re.target import Target
 
 
