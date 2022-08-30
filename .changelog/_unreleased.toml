@@ -1,0 +1,5 @@
+[[entries]]
+id = "895551c8-0512-472f-acd6-16d0f745ecad"
+type = "fix"
+description = "fix `RuleSet.get_rules_for_output_type()` and add unit tests"
+author = "@NiklasRosenstein"

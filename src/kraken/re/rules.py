@@ -104,7 +104,6 @@ class RuleSet:
 
     def __init__(self) -> None:
         self._rules: list[Rule] = []
-        self._rules_by_output_type: dict[type, list[Rule]] = {}
 
     def add_rule(self, rule: Rule) -> None:
         assert isinstance(rule, Rule), type(rule).__qualname__
@@ -142,9 +141,9 @@ class RuleSet:
         """
 
         type_matcher = type_matcher or operator.eq
-        for type_ in self._rules_by_output_type:
-            if type_matcher(type_, output_type):
-                yield from self._rules_by_output_type[type_]
+        for rule in self._rules:
+            if type_matcher(rule.output_type, output_type):
+                yield rule
 
     def resolve_paths(
         self,
