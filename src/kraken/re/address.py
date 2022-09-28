@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import abc
 import dataclasses
+import posixpath
 
 
 def _validate_address_directory(directory: str) -> None:
@@ -81,9 +82,13 @@ class CommonAddressSpec(AddressSpec):
         return result
 
     def matches_address(self, address: Address) -> bool:
-        return (not self.directory or self.directory == address.directory) and (
-            not self.name or self.name == address.name
-        )
+        if self.directory is not None:
+            a = posixpath.normpath(self.directory)
+            b = posixpath.normpath(address.directory)
+            if a != b:
+                return False
+
+        return not self.name or self.name == address.name
 
     @classmethod
     def of(cls, s: str) -> CommonAddressSpec:
