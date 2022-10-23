@@ -11,7 +11,7 @@ T = TypeVar("T")
 class RuleEngine:
     """Finds the path to evaluate rules to reach a target type from a set of input types."""
 
-    def __init__(self, rules: RuleSet, type_matcher: TypeMatcherFunc | None = None) -> None:
+    def __init__(self, rules: RuleSet, type_matcher: TypeMatcherFunc | None = isinstance) -> None:
         self._rules = rules
         self._type_matcher = type_matcher
 

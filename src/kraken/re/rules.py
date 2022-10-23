@@ -72,7 +72,7 @@ class Rule:
 
         if signature.return_annotation is signature.empty:
             raise ValueError(f"rule function `{function.__qualname__}` must have a return type annotation")
-        if not isinstance(signature.return_annotation, type):
+        if not isinstance(signature.return_annotation, type) and signature.return_annotation is not None:
             raise ValueError(
                 f"rule function `{function.__qualname__}` return type annotation must be a type "
                 f"(got `{type(signature.return_annotation).__name__}`)"
@@ -94,7 +94,7 @@ class Rule:
         return cls(
             function.__qualname__,
             FrozenDict(required_types),
-            signature.return_annotation,
+            type(None) if signature.return_annotation is None else signature.return_annotation,
             function,
         )
 

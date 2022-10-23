@@ -49,6 +49,12 @@ class Field(Generic[T]):
             return cast(T, getattr(cls, "default", None))
         return cast(T, raw_value)
 
+    def get(self) -> T:
+        """Should only be used with fields that are required."""
+        if self.value is None:
+            raise RuntimeError(f"value of field {self} is None or not set")
+        return self.value
+
 
 @dataclasses.dataclass(frozen=True)
 class FieldSetSpec:
@@ -152,6 +158,11 @@ class ScalarField(Field[T], abstract=True):
                 cls.value_type_description,
             )
         return cast(Optional[T], computed_value)
+
+
+class BooleanField(ScalarField[bool], abstract=True):
+    value_type = bool
+    value_type_description = "a boolean"
 
 
 class IntField(ScalarField[int], abstract=True):
